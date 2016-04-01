@@ -9,56 +9,99 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 
 // https://github.com/googlesamples/android-ndk
 public class MainActivity extends AppCompatActivity {
 
+    private EditText mThreadCount;
+    private EditText mIterationCount;
+    private TextView mTextView = null;
+    private Button mStartButton = null;
 
+    private void assignViews() {
+        mThreadCount = (EditText) findViewById(R.id.thread_count);
+        mIterationCount = (EditText) findViewById(R.id.iteration_count);
+        mTextView =(TextView) findViewById(R.id.log_text_view);
+        mStartButton =(Button) findViewById(R.id.startButton);
 
-    private native  String getCLanguageString();
+        mStartButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    startThreads(5,10);
+            }
+        });
+    }
+
+    private void startThreads(int threads,int interations)
+    {
+       // javaThreads(threads,interations);
+        nativeWThreads(threads,interations);
+
+    }
+
+    private void javaThreads(int threads,final int interations)
+    {
+        for(int i=0;i<threads;i++)
+        {
+            final int id = i;
+
+            Thread thread = new Thread()
+            {
+                @Override
+                public void run() {
+                    super.run();
+                    nativeWorker(id, interations);
+                }
+            };
+
+            thread.start();
+        }
+    }
+
+    static
+    {
+        System.loadLibrary("JniHelper");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        System.loadLibrary("JniHelper");
+        Log.d("guidongli", getCLanguageString());
 
+        nativeInit();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        assignViews();
+    }
+
+    private void OnNativeMessage(final String message)
+    {
+        runOnUiThread(new Runnable() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void run() {
+                mTextView.append(message);
+                mTextView.append("\n");
             }
         });
-
-        Log.d("guidongli",getCLanguageString());
-
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    protected void onDestroy() {
+        super.onDestroy();
+        nativeFree();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    private native  String getCLanguageString();
+    private native  void nativeInit();
+    private native  void nativeFree();
+    private native  void nativeWorker(int id,int iterations);
+    private native  void nativeWThreads(int id,int iterations);
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
-        return super.onOptionsItemSelected(item);
-    }
+
 }

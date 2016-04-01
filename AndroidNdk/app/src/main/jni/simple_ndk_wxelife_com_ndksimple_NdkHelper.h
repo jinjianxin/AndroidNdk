@@ -15,6 +15,18 @@ extern "C" {
 JNIEXPORT jstring JNICALL Java_simple_ndk_wxelife_com_androidndk_MainActivity_getCLanguageString
   (JNIEnv *, jobject);
 
+JNIEXPORT void JNICALL Java_simple_ndk_wxelife_com_androidndk_MainActivity_nativeInit
+  (JNIEnv *, jobject);
+
+JNIEXPORT void JNICALL Java_simple_ndk_wxelife_com_androidndk_MainActivity_nativeFree
+  (JNIEnv *, jobject);
+
+JNIEXPORT void JNICALL Java_simple_ndk_wxelife_com_androidndk_MainActivity_nativeWorker
+  (JNIEnv *, jobject,jint ,jint);
+
+JNIEXPORT void JNICALL Java_simple_ndk_wxelife_com_androidndk_MainActivity_nativeWThreads
+  (JNIEnv *, jobject,jint ,jint);
+
 #ifdef __cplusplus
 }
 #endif
